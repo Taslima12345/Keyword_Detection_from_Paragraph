@@ -152,36 +152,47 @@ int main()
         }
         iFile.close();
 
-        ifstream iff;
+         string pureWordFile="pureWords";
+            int t=file;
+            t++;
+            stringstream strs;
+            strs<<t;
+            string z = strs.str();
 
-        oFile.open("pureWords.txt");
+            pureWordFile = pureWordFile+ z+".txt";
+            //oFile.open("pureWords.txt");
+            cout<<pureWordFile<<endl;
+            ofstream oFile;
 
-        string WordFromTextLine, StopWord;
-        int TotalWord = 0;
+            oFile.open(pureWordFile.c_str());
 
-        for(int j =0 ; j < LineNo ; j++){
+            string WordFromTextLine, StopWord;
+            TotalWord[file] = 0;
 
-            stringstream ss(line[j]);
+            ifstream iff;
+            for(int j =0 ; j < LineNo ; j++){
+                cout<<"LOL\n";
 
-            while(ss>>WordFromTextLine){
+                stringstream ss(line[j]);
 
-                bool found=false;
+                while(ss>>WordFromTextLine){
 
-                iff.open("stopWords.txt");
+                    bool found=false;
 
-                if(iff.is_open()){
+                    iff.open("stopWords.txt");
 
-                    while(iff>>StopWord){
+                    if(iff.is_open()){
 
-                        if(StopWord==WordFromTextLine){
+                        while(iff>>StopWord){
 
-                            found=true;
-                            break;
+                            if(StopWord==WordFromTextLine){
+
+                                found=true;
+                                break;
+                            }
                         }
                     }
-                }
-                iff.close();
-
+                    iff.close();
                 if(found==false){
 
                     oFile<<WordFromTextLine<<" ";
