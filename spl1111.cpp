@@ -4,11 +4,23 @@
 #include<sstream>
 
 using namespace  std ;
-char **arr;
+
+
 string str;
-string line[10000],word[10000];
-int num[10000];
+string line[1000],word[100][10000];
+string WordListOfAllFiles[1000000];
+double tf[100][10000], idf[1000000], tf_idf[1000000], added_tf[1000000];
+int num[100][10000], TotalWord[100];
 int len=0;
+int FileNumber, IndividualWordsInAllFiles;
+
+void TF(int TotalWord, int file){
+
+    for(int i=0; i< TotalWord; i++){
+        tf[file][i] = (double)num[file][i]/TotalWord;
+    }
+}
+
 
 void Now_Merge( int left, int middle, int right)
 {
@@ -226,6 +238,30 @@ int main()
 
             }
         }
+        
+        
+           Do_MergeSort( 0, TotalWord[file]-1, file );
+            TF(TotalWord[file], file);
+
+            cout<<"File name = "<<FileName[file]<<"\tTotal word = "<<TotalWord[file]<<endl;
+            cout<<"[WORD]\t\t[NUMBER OF PRESENCE]\n";
+            cout<<"================================================\n\n";
+
+            for(int i=0; i<TotalWord[file]; i++){
+                if(word[file][i]!="-1")
+                    cout<<word[file][i]<<"\t\t"<<num[file][i]<<endl;
+            }
+
+            cout<<"\n\n\t\t[TF]\n";
+            cout<<"================================================\n\n";
+            for(int i=0; i<TotalWord[file]; i++){
+                if(word[file][i]!="-1")
+                    cout<<word[file][i]<<"\t\t"<<tf[file][i]<<endl;
+            }
+            cout<<endl<<endl;
+        }
+    }
+            
         Do_MergeSort( 0, TotalWord-1 );
 
         for(int i=0; i<TotalWord; i++){
