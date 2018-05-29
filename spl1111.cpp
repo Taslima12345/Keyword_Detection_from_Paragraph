@@ -2,6 +2,7 @@
 #include<string>
 #include<fstream>
 #include<sstream>
+#include<cmath>
 
 using namespace  std ;
 
@@ -14,28 +15,27 @@ int num[100][10000], TotalWord[100];
 int len=0;
 int FileNumber, IndividualWordsInAllFiles;
 
-void TF(int TotalWord, int file){
 
-    for(int i=0; i< TotalWord; i++){
-        tf[file][i] = (double)num[file][i]/TotalWord;
-    }
-}
+void Now_MergeForTF_IDF(int left,int middle,int right){
 
-
-void Now_Merge( int left, int middle, int right)
-{
     int i, j, k;
     int n1 = middle - left + 1;
     int n2 =  right - middle;
     string temp;
 
-    int L[n1], R[n2];
+    double L[n1], R[n2];
+    string Lw[n1], Rw[n2];
 
-    for (i = 0; i < n1; i++)
-        L[i] = num[left + i];
+    for (i = 0; i < n1; i++){
+        L[i] = tf_idf[left + i];
+        Lw[i] = WordListOfAllFiles[left + i];
+    }
 
-    for (j = 0; j < n2; j++)
-        R[j] = num[ (middle +1) + j];
+    for (j = 0; j < n2; j++){
+        R[j] = tf_idf[(middle +1) + j];
+        Rw[j] = WordListOfAllFiles[(middle +1) + j];
+
+    }
 
     i = 0;
     j = 0;
@@ -45,21 +45,15 @@ void Now_Merge( int left, int middle, int right)
     {
         if (L[i] <= R[j])
         {
-            num[k] = L[i];
-
-            temp = word[k];
-            word[k] = word[i];
-            word[i] = temp;
+            tf_idf[k] = L[i];
+            WordListOfAllFiles[k] = Lw[i];
 
             i++;
         }
         else
         {
-            num[k] = R[j];
-
-            temp = word[k];
-            word[k] = word[j];
-            word[j] = temp;
+            tf_idf[k] = R[j];
+            WordListOfAllFiles[k] = Rw[j];
 
             j++;
         }
@@ -68,11 +62,8 @@ void Now_Merge( int left, int middle, int right)
 
     while (i < n1)
     {
-        num[k] = L[i];
-
-        temp = word[k];
-        word[k] = word[i];
-        word[i] = temp;
+        tf_idf[k] = L[i];
+        WordListOfAllFiles[k] = Lw[i];
 
         i++;
         k++;
@@ -80,11 +71,132 @@ void Now_Merge( int left, int middle, int right)
 
     while (j < n2)
     {
-        num[k] = R[j];
+        tf_idf[k] = R[j];
+        WordListOfAllFiles[k] = Rw[j];
 
-        temp = word[k];
-        word[k] = word[i];
-        word[i] = temp;
+        j++;
+        k++;
+    }
+}
+
+void Do_MergeSortForTF_IDF( int left, int right){
+
+    if (left < right)
+        {
+            int middle = left+(right-left)/2;
+
+            Do_MergeSortForTF_IDF( left, middle);
+            Do_MergeSortForTF_IDF( middle+1, right);
+
+            Now_MergeForTF_IDF( left, middle, right);
+        }
+}
+void TF_IDF(){
+
+    for(int k=0; k<IndividualWordsInAllFiles; k++){
+        bool found = false;
+        double total = 0.0;
+
+        for(int i=0; i<FileNumber; i++){
+            for(int j=0; j<TotalWord[i]; j++){
+
+                if(WordListOfAllFiles[k]==word[i][j]){
+                    total = total + tf[i][j];
+                    found =true;
+                    break;
+                }
+            }
+            if(found==true) break;
+        }
+        added_tf[k] = total;
+    }
+    for(int k=0; k<IndividualWordsInAllFiles; k++){
+        tf_idf[k] = added_tf[k]*idf[k];
+    }
+
+}
+
+
+void IDF(string term, int a){
+    int counter=0;
+    for(int i=0; i<FileNumber; i++){
+
+        for(int j=0; j<TotalWord[i]; j++){
+            if(term==word[i][j]){
+                counter++;
+                break;
+            }
+        }
+
+    }
+    cout<<"Counter : "<<counter<<endl;
+    idf[a] = log10((double)FileNumber/counter);
+}
+
+void TF(int TotalWord, int file){
+
+    for(int i=0; i< TotalWord; i++){
+        tf[file][i] = (double)num[file][i]/TotalWord;
+    }
+}
+
+void Now_Merge( int left, int middle, int right, int file)
+{
+    int i, j, k;
+    int n1 = middle - left + 1;
+    int n2 =  right - middle;
+    string temp;
+
+    int L[n1], R[n2];
+    string Lw[n1], Rw[n2];
+
+    for (i = 0; i < n1; i++){
+        L[i] = num[file][left + i];
+        Lw[i] = word[file][left + i];
+    }
+
+    for (j = 0; j < n2; j++){
+        R[j] = num[file][(middle +1) + j];
+        Rw[j] = word[file][(middle +1) + j];
+
+    }
+
+    i = 0;
+    j = 0;
+    k = left;
+
+    while (i < n1 && j < n2)
+    {
+        if (L[i] >= R[j])
+        {
+            num[file][k] = L[i];
+            word[file][k] = Lw[i];
+
+            i++;
+        }
+        else
+        {
+            num[file][k] = R[j];
+            word[file][k] = Rw[j];
+
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1)
+    {
+        num[file][k] = L[i];
+        word[file][k] = Lw[i];
+
+        i++;
+        k++;
+    }
+
+    while (j < n2)
+    {
+        num[file][k] = R[j];
+        word[file][k] = Rw[j];
 
         j++;
         k++;
@@ -92,16 +204,16 @@ void Now_Merge( int left, int middle, int right)
 }
 
 
-void Do_MergeSort( int left, int right)
-{
+void Do_MergeSort( int left, int right, int file){
+
     if (left < right)
     {
         int middle = left+(right-left)/2;
 
-        Do_MergeSort( left, middle);
-        Do_MergeSort( middle+1, right);
+        Do_MergeSort( left, middle, file);
+        Do_MergeSort( middle+1, right, file);
 
-        Now_Merge( left, middle, right);
+        Now_Merge( left, middle, right, file);
     }
 }
 
@@ -135,36 +247,52 @@ string PunctuationCleaningAndLowercasing(string  str,int len)
 	return str;
 }
 
+
+
 int main()
 {
+
     ifstream iFile;
 
-    ofstream oFile;
+    cout<<"How many text files to be read?\n";
+    cin>>FileNumber;
 
-    iFile.open("TextToRead1.txt");
-    string str;
+    string FileName[FileNumber];
 
-    if(iFile.is_open())
-    {
+    cout<<"Input file names :\n";
+    for(int i=0; i<FileNumber; i++){
+        cin>>FileName[i];
+    }
+    //FileName = "TextToRead1.txt";
 
-        int LineNo=0 ;
+    //iFile.open("TextToRead1.txt");
+    for(int file=0; file<FileNumber; file++){
 
-        while(getline(iFile,str))
+        iFile.open(FileName[file].c_str());
+
+        string str;
+
+        if(iFile.is_open())
         {
 
-            len = StringLength(str);
+            int LineNo=0 ;
 
-            str = PunctuationCleaningAndLowercasing(str,len) ;
+            while(getline(iFile,str))
+            {
 
-            string s ;
-            line[LineNo] = str;
+                len = StringLength(str);
 
-            LineNo++;
+                str = PunctuationCleaningAndLowercasing(str,len) ;
 
-        }
-        iFile.close();
+                string s ;
+                line[LineNo] = str;
 
-         string pureWordFile="pureWords";
+                LineNo++;
+
+            }
+            iFile.close();
+
+            string pureWordFile="pureWords";
             int t=file;
             t++;
             stringstream strs;
@@ -183,7 +311,6 @@ int main()
 
             ifstream iff;
             for(int j =0 ; j < LineNo ; j++){
-                cout<<"LOL\n";
 
                 stringstream ss(line[j]);
 
@@ -205,42 +332,36 @@ int main()
                         }
                     }
                     iff.close();
-                if(found==false){
 
-                    oFile<<WordFromTextLine<<" ";
-                    word[TotalWord]=WordFromTextLine;
-                    TotalWord++;
-                }
-            }
+                    if(found==false){
 
-        }
-        /*ifstream fl;
-        fl.open("pureWords.txt");
-        string st;
-        */
-        cout<<"\n\nWORD\t\tNUMBER OF PRESENCE\n\n";
-
-        for(int i=0; i<TotalWord; i++){
-
-            int WordCount=1;
-            if(word[i]!="-1"){
-
-                for(int k=i+1; k<TotalWord; k++){
-
-                    if(word[i]==word[k]){
-                        word[k]="-1";
-                        WordCount++;
+                        oFile<<WordFromTextLine<<" ";
+                        word[file][TotalWord[file]]=WordFromTextLine;
+                        TotalWord[file]++;
                     }
                 }
-            }
-            if(word[i]!="-1"){
-                num[i]=WordCount;
 
             }
-        }
-        
-        
-           Do_MergeSort( 0, TotalWord[file]-1, file );
+
+            for(int i=0; i<TotalWord[file]; i++){
+
+                int WordCount=1;
+                if(word[file][i]!="-1"){
+
+                    for(int k=i+1; k<TotalWord[file]; k++){
+
+                        if(word[file][i]==word[file][k]){
+                            word[file][k]="-1";
+                            WordCount++;
+                        }
+                    }
+                }
+                if(word[file][i]!="-1"){
+                    num[file][i]=WordCount;
+
+                }
+            }
+            Do_MergeSort( 0, TotalWord[file]-1, file );
             TF(TotalWord[file], file);
 
             cout<<"File name = "<<FileName[file]<<"\tTotal word = "<<TotalWord[file]<<endl;
@@ -261,14 +382,49 @@ int main()
             cout<<endl<<endl;
         }
     }
-            
-        Do_MergeSort( 0, TotalWord-1 );
+    int a=0;
 
-        for(int i=0; i<TotalWord; i++){
-            if(word[i]!="-1")
-                cout<<word[i]<<"\t\t"<<num[i]<<endl;
+    for(int i=0; i<FileNumber; i++){
+        for(int j=0; j<TotalWord[i]; j++){
+            bool flag = false;
+            for(int k=0; k<a; k++){
+                if( word[i][j]=="-1" || WordListOfAllFiles[k]==word[i][j]){
+                    flag = true;
+                    break;
+                }
+            }
+            if(flag==false){
+                WordListOfAllFiles[a]=word[i][j];
+
+                IDF(word[i][j],a);
+                a++;
+            }
         }
-
     }
+    IndividualWordsInAllFiles = a;
+
+    cout<<"\n\n\t\t[IDF]\n";
+    cout<<"================================================\n\n";
+    for(int i=0; i<a; i++){
+        cout<<WordListOfAllFiles[i]<<"\t\t"<<idf[i]<<endl;
+    }
+    cout<<endl;
+
+    TF_IDF();
+    Do_MergeSortForTF_IDF( 0, IndividualWordsInAllFiles-1);
+
+    cout<<"\n\n\t[TF-IDF][Sorted in Increasing Order]\n";
+    cout<<"================================================\n\n";
+    for(int i=0; i<IndividualWordsInAllFiles; i++){
+        cout<<WordListOfAllFiles[i]<<"\t\t"<<tf_idf[i]<<endl;
+    }
+
+    cout<<"\n\nTop 5 elements having smallest tf-idf values can be considered as KEY WORDS\n\n"
+            <<"So KEY WORDS are :\n"<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+    for(int i=0; i<5; i++){
+        cout<<WordListOfAllFiles[i]<<endl;
+    }
+    cout<<"\n\n================================================\n\n";
     return 0;
 }
+
