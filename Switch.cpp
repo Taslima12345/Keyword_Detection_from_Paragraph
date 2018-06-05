@@ -7,7 +7,7 @@
 using namespace  std ;
 
 bool switchFound=false, firstIf=true;
-string caseCondition[260]={""}, switchExp[260]={""};
+string caseStatement[260]={""}, caseCondition[260]={""};
 string switchValue="";
 
 //==>
@@ -34,7 +34,7 @@ bool CheckForSwitch(string str){
 
     for(int i=bracketIndex+1; i<length; i++){
         if(str[i]==')')break;
-        if(str[i]!=' ') switchValue=switchValue+str[i];
+         switchValue=switchValue+str[i];
     }
 
     if(Found==true && paranthesisFound==true) return true;
@@ -50,20 +50,20 @@ void WriteOutput(ofstream &oFile,int caseNo, int caseStart){
     for(int i=caseNo; i>caseStart; i--){
 
 
-        if(caseCondition[i]=="" ){
-            if(i<caseNo)switchExp[hasCond]=switchExp[i]+"|| "+switchExp[hasCond];
+        if(caseStatement[i]=="" ){
+            if(i<caseNo)caseCondition[hasCond]=caseCondition[i]+"|| "+caseCondition[hasCond];
 
         }
-        else{
-            if(i<caseNo) caseCondition[i]=caseCondition[i]+caseCondition[hasCond];
+        else if(caseStatement[i]!=""){
+            if(i<caseNo) caseStatement[i]=caseStatement[i]+caseStatement[hasCond];
             hasCond=i;
         }
     }
     for(int i=caseStart+1; i<=caseNo; i++){
-        if(caseCondition[i]!=""){
-            oFile<<"if("+switchExp[i]+"){\n"+caseCondition[i]+"}\n";
+        if(caseStatement[i]!=""){
+            oFile<<"if("+caseCondition[i]+"){\n"+caseStatement[i]+"}\n";
 
-            cout<<"if("+switchExp[i]+"){\n"+caseCondition[i]+"}\n";
+            cout<<"if("+caseCondition[i]+"){\n"+caseStatement[i]+"}\n";
         }
     }
     //cout<<"left\n";
@@ -75,64 +75,70 @@ void WriteOutput(ofstream &oFile,int caseNo, int caseStart){
 void ConvertSwitchInto_if_else(ifstream &iFile, ofstream &oFile){
     string str;
     int caseNo=0, caseStart=0;
-    string switchExpDefault="else{\n";
+    string DefaultStatement="else{\n";
     bool defaultFound=false;
 
     while(getline(iFile,str)){
         //cout<<str<<endl;
-        int switchExpPosition=-1;
+        //int switchExpPosition=-1;
 
-        bool switchExpFound=false;
-        bool IsAcondition=true;
+        bool caseCondFound=false;
+        bool IsAStatement=true;
         for(int i=0; str[i]; i++){
 
             if(defaultFound==true && str[i]=='}' ) {
 
-                oFile<<switchExpDefault+"}\n";
-                cout<<switchExpDefault+"}\n";
+                oFile<<DefaultStatement+"}\n";
+                cout<<DefaultStatement+"}\n";
                 switchFound=false;
                 defaultFound==false;
                 return;
             }
             else if(defaultFound==true && (str[i]=='b'&& str[i+1]=='r'&& str[i+2]=='e'
                &&str[i+3]=='a' &&str[i+4]=='k')){
-                IsAcondition=false;
+                IsAStatement=false;
                 break;
             }
             else if(defaultFound==false &&str[i]=='b'&& str[i+1]=='r'&& str[i+2]=='e'
                &&str[i+3]=='a' &&str[i+4]=='k'){
+
                     WriteOutput(oFile,caseNo,caseStart);
                     caseStart=caseNo;
-                    IsAcondition=false;
+                    IsAStatement=false;
                }
-            else if(str[i]==':'){
-                switchExpFound=false;
-                switchExp[caseNo]= switchValue+"=="+switchExp[caseNo];
-                IsAcondition=false;
+            else if(caseCondFound==true &&str[i]==':'){
+                caseCondFound=false;
+                caseCondition[caseNo]= switchValue+"=="+caseCondition[caseNo];
+                 //cout<<caseCondition[caseNo]<<endl;
+                IsAStatement=false;
             }
             else if(str[i]=='c'&& str[i+1]=='a'&& str[i+2]=='s' &&str[i+3]=='e'){
                 //switchExpPosition=i+3;
                 i+=3;
-                switchExpFound=true;
+                caseCondFound=true;
                 caseNo++;
-                IsAcondition=false;
+                IsAStatement=false;
             }
-            else if(switchExpFound==true){
-                if(str[i]!=' ') switchExp[caseNo]=switchExp[caseNo]+str[i];
-                 IsAcondition=false;
+            else if(caseCondFound==true){
+                if(str[i]!=' ') caseCondition[caseNo]=caseCondition[caseNo]+str[i];  //pblm
+                 IsAStatement=false;
             }
 
             else if(str[i]=='d'&& str[i+1]=='e'&& str[i+2]=='f'
                &&str[i+3]=='a' &&str[i+4]=='u' &&str[i+5]=='l' &&str[i+6]=='t'){
                 //cout<<"enterd\n";
                 defaultFound=true;
-                IsAcondition=false;
+                IsAStatement=false;
             }
 
         }
-        if(IsAcondition==true &&defaultFound==false)caseCondition[caseNo]=caseCondition[caseNo]+str+"\n";
-        else if(IsAcondition==true &&defaultFound==true){
-            switchExpDefault=switchExpDefault+str+"\n";
+        if(IsAStatement==true &&defaultFound==false){
+                 //cout<<str<<endl;
+                caseStatement[caseNo]=caseStatement[caseNo]+str+"\n";
+        }
+        else if(IsAStatement==true &&defaultFound==true){
+             //cout<<str<<endl;
+            DefaultStatement=DefaultStatement+str+"\n";
         }
     }
 }
