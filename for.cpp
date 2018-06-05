@@ -18,7 +18,7 @@ bool CheckForLoop(string str){
         length++;
     }
 
-    for(int i=0; i<length-4; i++){
+    for(int i=0; i<length; i++){
         if(str[i]=='f'&& str[i+1]=='o'&& str[i+2]=='r'){
             Found=true;
         }
@@ -70,7 +70,7 @@ string ConvertToWhile(string str){
 
     for(int i=semiColon+1; i<bracketIndex2; i++){
 
-        if(str[i]!=' ') after[nestedLoop]= after[nestedLoop]+str[i];
+         after[nestedLoop]= after[nestedLoop]+str[i];
 
     }
 
