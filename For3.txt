@@ -1,0 +1,23 @@
+int i=0, c=420;
+for(; ;){
+    if(i==c)break;
+    i++;
+}
+
+//nested for loop.
+
+
+for (k = 0; k < V; k++)
+{
+        
+        for (i = 0; i < V; i++)
+        {
+           
+            for (j = 0; j < V; j++)
+            {
+              
+                if (dist[i][k] + dist[k][j] < dist[i][j])
+                    dist[i][j] = dist[i][k] + dist[k][j];
+            }
+        }
+    }

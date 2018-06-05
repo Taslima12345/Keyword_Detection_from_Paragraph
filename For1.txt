@@ -1,0 +1,20 @@
+// design pattern 
+ for (int i=start_value; i < finish_value; i = i + by_count ) 
+   {         
+     do something 
+   } 
+ 
+ // example: sum numbers from 1 to 10 
+ int total = 0; 
+ for (int i=1; i<10; i++) 
+   { 
+     total += i; 
+   } 
+
+//////
+
+int i=0, c=420;
+for(; ;){
+    if(i==c)break;
+    i++;
+}

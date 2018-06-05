@@ -1,0 +1,36 @@
+int i=0, c=420;
+while(true){
+
+    if(i==c)break;
+    i++;
+}
+
+//nested for loop.
+
+
+k = 0;
+while( k < V)
+
+{
+        
+i = 0;
+while( i < V)
+
+        {
+           
+j = 0;
+while( j < V)
+
+            {
+              
+                if (dist[i][k] + dist[k][j] < dist[i][j])
+                    dist[i][j] = dist[i][k] + dist[k][j];
+	j++;
+            }
+
+	i++;
+        }
+
+	k++;
+    }
+
