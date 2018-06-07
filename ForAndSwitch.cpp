@@ -173,18 +173,18 @@ string CloseIfCurlyBraceFound(string str){
 //==>
 
 void WriteOutput(ofstream &oFile,int caseNo, int caseStart){
-    int hasCond=caseNo;
+    int hasStatement=caseNo;
     //cout<<"entered\n";
     for(int i=caseNo; i>caseStart; i--){
 
 
         if(caseStatement[i]=="" ){
-            if(i<caseNo)caseCondition[hasCond]=caseCondition[i]+"|| "+caseCondition[hasCond];
+            if(i<caseNo)caseCondition[hasStatement]=caseCondition[i]+"|| "+caseCondition[hasStatement];
 
         }
         else if(caseStatement[i]!=""){
-            if(i<caseNo) caseStatement[i]=caseStatement[i]+caseStatement[hasCond];
-            hasCond=i;
+            if(i<caseNo) caseStatement[i]=caseStatement[i]+caseStatement[hasStatement];
+            hasStatement=i;
         }
     }
     for(int i=caseStart+1; i<=caseNo; i++){
@@ -234,12 +234,6 @@ void ConvertSwitchInto_if_else(ifstream &iFile, ofstream &oFile){
                     caseStart=caseNo;
                     IsAStatement=false;
                }
-            else if(caseCondFound==true &&str[i]==':'){
-                caseCondFound=false;
-                caseCondition[caseNo]= switchValue+"=="+caseCondition[caseNo];
-                 //cout<<caseCondition[caseNo]<<endl;
-                IsAStatement=false;
-            }
             else if(str[i]=='c'&& str[i+1]=='a'&& str[i+2]=='s' &&str[i+3]=='e'){
                 //switchExpPosition=i+3;
                 i+=3;
@@ -247,9 +241,16 @@ void ConvertSwitchInto_if_else(ifstream &iFile, ofstream &oFile){
                 caseNo++;
                 IsAStatement=false;
             }
-            else if(caseCondFound==true){
+            else if(caseCondFound==true &&str[i]!=':'){
                 if(str[i]!=' ') caseCondition[caseNo]=caseCondition[caseNo]+str[i];  //pblm
                  IsAStatement=false;
+            }
+
+            else if(caseCondFound==true &&str[i]==':'){
+                caseCondFound=false;
+                caseCondition[caseNo]= switchValue+"=="+caseCondition[caseNo];
+                 //cout<<caseCondition[caseNo]<<endl;
+                IsAStatement=false;
             }
 
             else if(str[i]=='d'&& str[i+1]=='e'&& str[i+2]=='f'
